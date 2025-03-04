@@ -1,6 +1,9 @@
-# PSP Media Engine Samples/Examples
+# PSP Media Engine Samples/Examples  
 
 This repository catalogs links to samples and code examples related to the PSP Media Engine
+
+- **Transfering data between main memory and the vme/dsp internal 24-bit buffers**  
+  [https://github.com/mcidclan/vme-primary-dmac](https://github.com/mcidclan/vme-primary-dmac)  
 
 - **Minimal reset handler**  
   [https://github.com/mcidclan/me-minimal-handler](https://github.com/mcidclan/me-minimal-handler)  
@@ -10,6 +13,8 @@ This repository catalogs links to samples and code examples related to the PSP M
 
 - **Using DMACPlus for transferring data between both CPUs**  
   [https://github.com/mcidclan/me-dmacplus-transfer](https://github.com/mcidclan/me-dmacplus-transfer)  
+  [https://github.com/mcidclan/me-dmacplus-sc2me-then-me2sc](https://github.com/mcidclan/me-dmacplus-sc2me-then-me2sc)  
+  [https://github.com/mcidclan/me-dmacplus-me2sc](https://github.com/mcidclan/me-dmacplus-me2sc)  
 
 - **Simple counter using shared uncached memory**  
   [https://github.com/mcidclan/me-simple-count](https://github.com/mcidclan/me-simple-count)  
@@ -25,3 +30,4 @@ This repository catalogs links to samples and code examples related to the PSP M
 
 - **Writing and updating a GE list concurrently from both CPUs**  
   [https://github.com/mcidclan/me-feed-graphics-engine](https://github.com/mcidclan/me-feed-graphics-engine)  
+
