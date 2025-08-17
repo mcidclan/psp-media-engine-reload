@@ -44,24 +44,30 @@ Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media 
 DMACplus provides bidirectional DMA transfers between Media Engine and Main CPU, managed by the main system control.
 
 ### DMACplusLCDC
-- **Shared drawing using DMACplus + LCDC**: Rendering between Media Engine to a direct framebuffer attached to the LCD.
+- **Shared drawing using DMACplusLCDC**: Rendering between Media Engine to a direct framebuffer attached to the LCD.
 
 ### Processing Units
 - **CSC (Color Space Conversion)**
- - CSC AVC:
- - CSC VME:
+ - **CSC VME**: YCbCr data to RGB using the VME. YCbCr source planes are separated (Y1/Cb1/Cr1)
+ - **CSC AVC**: The AVC hardware module requires a Y plane and a packed CbCr plane. YCbCr data needs to be organized in a specific band-based format:
+   - **16-pixel-wide vertical bands**: Data must be chunked into these narrow vertical strips
+   - **Alternating pattern**: Within 32-pixel-wide blocks, bands alternate between left and right halves
+     - First 16 pixels go to the left half
+     - Next 16 pixels go to the right half
+     - Pattern continues across the image width
+
 - **VME Virtual Mobile Engine / DSP**:
 
 ## Utils
 
 ### Synchronization & Interrupts
-- **Spinlock**: Hardware Register that can be used as a mutex between main CPU and the Media Engine.
-- **Software interrupts**:
+- **Spinlock**: Hardware Register that can be used as a mutex between main CPU and the Media Engine. The spinlock uses a hardware register (0xbc100048) in which the main CPU can only modify bit[0] and the media Engine can only modify bit[1].
+
+- **Software interrupts**:  To achieve this, it is necessary to enable system-level interrupts for the Media Engine and external interrupts at its CP0 level, via the IM mask above the Status register. An exception handler must be configured.
 
 ### Considering Memory Access
-- **Cached memory**: 
-- **Uncached memory**:
-
+- **Cached memory**: To avoid cache line conflicts, variables can be aligned to 64 bytes.
+- **Uncached memory**: To avoid cache line conflicts, a simple approach is to disable caching for shared memory using 0x40000000
 
 ## PSP Media Engine Samples / Examples
 
