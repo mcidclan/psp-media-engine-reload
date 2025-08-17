@@ -18,7 +18,7 @@ The initialization code must be copied from System Control to the reset vector, 
 - **Usage**:
  - Can be used for Color Space Conversion (CSC) processing via CSC controller
  - Source/destination for DMACplus transfers
- - Compatible with internal DSP-fed DMAC
+ - Compatible with internal DMAC for DSP
  - General-purpose local memory for custom processing
 
 ### 0x04000000: Ping-Pong Buffers
@@ -35,7 +35,7 @@ Complex DMAC handling multiple sources/destinations across 24-bit buffers and un
 ### 0x040FF000: Primary DMAC
 Handles data transfers between ping-pong buffers and main memory from Media Engine. Shares hardware control registers with Multiplexer DMAC but uses different configuration parameters. Additional sources/destinations require further testing.
 
-### 0x04100000-0x04200000: DSP-fed DMAC (DMAC B)
+### 0x04100000-0x04200000: DMAC for DSP (DMAC B)
 Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media Engine side). Less complex than Multiplexer DMAC with apparent data transformation capabilities. Requires testing to identify potential DSP filters (FFT, FIR, IIR).
 
 ## Components
@@ -48,13 +48,13 @@ DMACplus provides bidirectional DMA transfers between Media Engine and Main CPU,
 
 ### Processing Units
 - **CSC (Color Space Conversion)**
- - **CSC VME**: YCbCr data to RGB using the VME. YCbCr source planes are separated (Y1/Cb1/Cr1)
- - **CSC AVC**: The AVC hardware module requires a Y plane and a packed CbCr plane. YCbCr data needs to be organized in a specific band-based format:
-   - **16-pixel-wide vertical bands**: Data must be chunked into these narrow vertical strips
-   - **Alternating pattern**: Within 32-pixel-wide blocks, bands alternate between left and right halves
-     - First 16 pixels go to the left half
-     - Next 16 pixels go to the right half
-     - Pattern continues across the image width
+  - CSC VME: YCbCr data to RGB using the VME. YCbCr source planes are separated (Y1/Cb1/Cr1)
+  - CSC AVC: The AVC hardware module requires a Y plane and a packed CbCr plane. YCbCr data needs to be organized in a specific band-based format:
+    - 16-pixel-wide vertical bands: Data must be chunked into these narrow vertical strips
+    - Alternating pattern: Within 32-pixel-wide blocks, bands alternate between left and right halves
+      - First 16 pixels go to the left half
+      - Next 16 pixels go to the right half
+      - Pattern continues across the image width
 
 - **VME Virtual Mobile Engine / DSP**:
 
@@ -71,7 +71,7 @@ DMACplus provides bidirectional DMA transfers between Media Engine and Main CPU,
 
 ## PSP Media Engine Samples / Examples
 
-This part gathers links to recent samples and code examples related to the PSP Media Engine. These samples are the result of personal exploration, trial and error, some hardware-level investigation, and occasional reverse engineering when needed. The approach has been mostly empirical, driven by experimentation and curiosity.
+This part gathers links to recent samples and code examples related to the PSP Media Engine. Backed by older community efforts, these samples are the result of personal exploration, trial and error, some hardware-level investigation, and occasional reverse engineering when needed. The approach has been mostly empirical, driven by experimentation and curiosity.
 
 The goal is to share findings and references that might be useful to others interested in working with the PSP's Media Engine.
 
