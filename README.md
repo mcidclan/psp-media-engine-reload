@@ -112,4 +112,20 @@ The goal is to share findings and references that might be useful to others inte
   [https://github.com/mcidclan/me-tiny-lib](https://github.com/mcidclan/me-tiny-lib)  
 
 
+## Thanks
+
+Thanks to:
+- crazyc
+- hlide  
+- CelestBlue
+- artart78
+- zecoxao
+- davee
+- xerpi
+- John (Hedge)
+- Kotcrab
+- All contributors to the PSP Hardware Register's page
+- Anyone else who contributed through documentation or reverse engineering
+
+
 *m-c/d*
