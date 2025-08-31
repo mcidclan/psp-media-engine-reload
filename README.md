@@ -83,6 +83,11 @@ While the first VME Hardware Register seems to be a configuration register, the 
 
 - **Uncached memory**: To avoid cache line conflicts, a simple approach is to disable caching for shared memory using 0x40000000
 
+## PSP Media Engine Custom Core Project
+
+A project to map the PSP's Media Engine core functions with the purpose of using them in our code. The idea is simply to make the native kernel/core functions of the media engine available to homebrew developers.  
+See: [https://github.com/mcidclan/psp-media-engine-custom-core](https://github.com/mcidclan/psp-media-engine-custom-core)  
+
 ## PSP Media Engine Samples / Examples
 
 This part gathers links to recent samples and code examples related to the PSP Media Engine. Backed by older community efforts, these samples are the result of personal exploration, trial and error, some hardware-level investigation, and occasional reverse engineering when needed. The approach has been mostly empirical, driven by experimentation and curiosity.
