@@ -35,6 +35,28 @@ Complex DMAC handling multiple sources/destinations across 24-bit buffers and un
 ### 0x040FF000: Primary DMAC
 Handles data transfers between ping-pong buffers and main memory from Media Engine. Shares hardware control registers with Multiplexer DMAC but uses different configuration parameters. Additional sources/destinations require further testing.
 
+#### Hardware registers
+
+| Address    |  R/W | Description |
+|------------|------|-------------|
+| 0x440ff000 |  RW  | status |
+| 0x440ff004 |  RW  | config / state / routing ? (values met 0x0, 0x31B, 0x831B, 0x1031B 0x1831B) |
+| 0x440ff008 |  RW  | control |
+| 0x440ff00c |  --  | unknown |
+| 0x440ff010 |  RW  | channel1 external src or dst depending on the control value |
+| 0x440ff014 |  RW  | channel1 word (4 bytes) count - 1 to be transfered |
+| 0x440ff018 |  RW  | channel1 internal src or dst word offset depending on the control value | 
+| 0x440ff01c |  -W  | clear mode ? |
+| 0x440ff020 |  RW  | channel2 src or dst word offset / addr ? | 
+| 0x440ff024 |  RW  | channel2 word (4 bytes) count - 1 to be transfered |
+| 0x440ff028 |  RW  | channel2 internal src or dst word offset depending on the control value |
+| 0x440ff02c |  -W  | unknown / config / offset  ? |
+| 0x440ff020 |  RW  | channel3 src or dst word offset / addr ? |
+| 0x440ff024 |  RW  | channel3 word (4 bytes) count - 1 to be transfered |
+| 0x440ff028 |  RW  | channel3 internal src or dst word offset depending on the control value |
+| 0x440ff030 |  --  | unknown |
+| 0x440ff034 |  -W  | unknown |
+
 ### 0x04100000-0x04200000: DMAC for DSP (DMAC B)
 Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media Engine side). Less complex than Multiplexer DMAC with apparent data transformation capabilities. Requires testing to identify potential DSP filters (FFT, FIR, IIR).
 
