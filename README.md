@@ -39,26 +39,60 @@ Handles data transfers between ping-pong buffers and main memory from Media Engi
 
 | Address    |  R/W | Description |
 |------------|------|-------------|
-| 0x440ff000 |  RW  | status |
-| 0x440ff004 |  RW  | config / state / routing ? (values met 0x0, 0x31B, 0x831B, 0x1031B 0x1831B) |
-| 0x440ff008 |  RW  | control |
-| 0x440ff00c |  --  | unknown |
-| 0x440ff010 |  RW  | channel1 external src or dst depending on the control value |
-| 0x440ff014 |  RW  | channel1 word (4 bytes) count - 1 to be transfered |
-| 0x440ff018 |  RW  | channel1 internal src or dst word offset depending on the control value | 
-| 0x440ff01c |  -W  | clear mode ? |
-| 0x440ff020 |  RW  | channel2 src or dst word offset / addr ? | 
-| 0x440ff024 |  RW  | channel2 word (4 bytes) count - 1 to be transfered |
-| 0x440ff028 |  RW  | channel2 internal src or dst word offset depending on the control value |
-| 0x440ff02c |  -W  | unknown / config / offset  ? |
-| 0x440ff020 |  RW  | channel3 src or dst word offset / addr ? |
-| 0x440ff024 |  RW  | channel3 word (4 bytes) count - 1 to be transfered |
-| 0x440ff028 |  RW  | channel3 internal src or dst word offset depending on the control value |
-| 0x440ff030 |  --  | unknown |
-| 0x440ff034 |  -W  | unknown |
+| 0x440ff000 |  RW  | Status |
+| 0x440ff004 |  RW  | Config / state / routing ? (values met 0x0, 0x31B, 0x831B, 0x1031B 0x1831B) |
+| 0x440ff008 |  RW  | Control |
+| 0x440ff00c |  --  | Unknown |
+| 0x440ff010 |  RW  | Channel1 external src or dst depending on the control value |
+| 0x440ff014 |  RW  | Channel1 word (4 bytes) count - 1 to be transfered |
+| 0x440ff018 |  RW  | Channel1 internal src or dst word offset depending on the control value | 
+| 0x440ff01c |  -W  | Clear mode ? |
+| 0x440ff020 |  RW  | Channel2 src or dst word offset / addr ? | 
+| 0x440ff024 |  RW  | Channel2 word (4 bytes) count - 1 to be transfered |
+| 0x440ff028 |  RW  | Channel2 internal src or dst word offset depending on the control value |
+| 0x440ff02c |  -W  | Unknown / config / offset  ? |
+| 0x440ff030 |  RW  | Channel3 src or dst word offset / addr ? |
+| 0x440ff034 |  RW  | Channel3 word (4 bytes) count - 1 to be transfered |
+| 0x440ff038 |  RW  | Channel3 internal src or dst word offset depending on the control value |
+| 0x440ff03c |  --  | Unknown |
+| 0x440ff040 |  -W  | Unknown |
 
-### 0x04100000-0x04200000: DMAC for DSP (DMAC B)
-Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media Engine side). Less complex than Multiplexer DMAC with apparent data transformation capabilities. Requires testing to identify potential DSP filters (FFT, FIR, IIR).
+### 0x04100000-0x04200000: VLD Unit (Variable Length Decoder)
+Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media Engine side). Hardware entropy decoder for video compression, decodes variable-length bitstreams into signed 32-bit DCT coefficients. Uses configurable code length lookup tables indexed by DCT levels to extract 1-32 bit codes from the bitstream.
+
+#### Hardware registers
+| Address    |  R/W | Description |
+|------------|------|-------------|
+| 0x44100000 |  RW  | Config / control / status |
+| 0x44100004 |  RW  | Max processed DCT coefficient count |
+| 0x44100008 |  RW  | Block step ?               3 bits |
+| 0x4410000c |  RW  | Word step                  3 bits |
+| 0x44100010 |  RW  | DCT level format           6 bits |
+| 0x44100014 |  RW  | DCT code max length - 1 ?  5 bits |
+| 0x44100018 |  RW  | Unknown                    3 bits | 
+| 0x4410001c |  RW  | Bitstream buffer address |
+| 0x44100020 |  RW  | Bitstream cursor (bit position) | 
+| 0x44100024 |  RW  | Config buffer ? First bytes are DCT level/LUT index and code length - 1 depending on config |
+| 0x44100028 |  RW  | Code length LUT (DCT level indexed) |
+| 0x4410002c |  RW  | Max DCT code count ? |
+| 0x44100030 |  RW  | DCT coefficient output buffer address |
+| 0x44100034 |  RW  | Unknown |
+| 0x44100038 |  RW  | Unknown |
+| 0x4410003c |  RW  | Transfer mode ? |
+
+#### Config register flags
+bit[1]  - Start decode  
+bit[6]  - Process DCT level ?  
+bit[7]  - ?  
+bit[8]  - ?  
+bit[9]  - ?  
+bit[10] - Enable cursor  
+bit[16] - ?  
+
+Examples:
+0b00000010000000000000001011000001  // 0x020002C1  
+0b00000000000000010000010111000001  // 0x000105C1  
+0b00000000000000010000011011000001  // 0x000106C1  
 
 ## Components
 
