@@ -68,7 +68,7 @@ Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media 
 | 0x44100008 |  RW  | Block step ?               3 bits |
 | 0x4410000c |  RW  | DCT coefficient step       3 bits |
 | 0x44100010 |  RW  | DCT level format           6 bits |
-| 0x44100014 |  RW  | DCT code max length - 1 ?  5 bits |
+| 0x44100014 |  RW  | DCT level buffer stride exponent (offset = 1 << N) | 5 bits |
 | 0x44100018 |  RW  | Unknown                    3 bits | 
 | 0x4410001c |  RW  | Bitstream buffer address |
 | 0x44100020 |  RW  | Bitstream cursor (DCT code position) | 
