@@ -2,13 +2,13 @@
 
 ## Code Execution Setup
 
-Code execution on the Media Engine is achieved through the reset vector in kernel mode. This requires kernel-level privileges through one of three approaches:
-
+Code execution on the Media Engine can be achieved through the reset vector in kernel mode or using one of the new methods available in the `me-safe-task` library project. This requires kernel-level privileges through one of the following approaches:
 1. **External kernel module**: Code deployed within a kernel module loaded from userland
 2. **Kernel bridge module**: Small kernel module containing a bridge to handle callbacks
-3. **Kexploit**: Eliminates external PRX dependency but increases boot time
+3. **kuBridge**: Available via custom firmware
+4. **Kexploit**: Eliminates external PRX dependency but increases boot time
 
-The initialization code must be copied from System Control to the reset vector, which is located at address `0xBFC00000`. The Status Register requires proper configuration to clear exceptions and enable the FPU before running your code.
+While using reset vector, the initialization code must be copied from System Control to it, which is located at address `0xBFC00000`. The Status Register requires proper configuration to clear exceptions and enable the FPU before running your code.
 
 ## Memory Map
 
@@ -18,19 +18,18 @@ The initialization code must be copied from System Control to the reset vector, 
 - **Usage**:
  - Can be used for Color Space Conversion (CSC) processing via CSC controller
  - Source/destination for DMACplus transfers
- - Compatible with internal DMAC for DSP
+ - Compatible with internal DMAC for DSP, and accessibe from the VME DSP
  - General-purpose local memory for custom processing
+ - Local Stack
 
 ### 0x04000000: Ping-Pong Buffers
 Activated by setting bit 5 (DMA A bus) of hardware register `0xBC100050` (Media Engine side).
 
-- **Main buffers**: 4 × 8KB 24-bit buffers (32-bit word aligned)  
- Range: `0x04000000` to `0x04008000`
-- **Extended buffers**: Additional 24-bit buffers (potential mirrors, requires more testing)  
- Range: `0x04008000` to `0x04088000`
+- **Base Buffers**: Range: `0x04000000` to `0x0401ffff`  
+Contains main 4 × 8KB 24-bit buffers (32-bit word aligned) + mirrors  
 
-### 0x040F8000: DMAC Multiplexer
-Complex DMAC handling multiple sources/destinations across 24-bit buffers and unidentified inputs (likely audio FIFO outputs). Activated with DMA A bit. Configuration complexity stems from unclear bit significance in 4 main hardware config registers.
+- **Top buffers**: Range: `0x04020000` to `0x04031fff`  
+Contains main 4 × 8KB 24-bit buffers + mirrors  
 
 ### 0x040FF000: Primary DMAC
 Handles data transfers between ping-pong buffers and main memory from Media Engine. Shares hardware control registers with Multiplexer DMAC but uses different configuration parameters. Additional sources/destinations require further testing.
@@ -50,12 +49,27 @@ Handles data transfers between ping-pong buffers and main memory from Media Engi
 | 0x440ff020 |  RW  | Channel2 src or dst word offset / addr ? | 
 | 0x440ff024 |  RW  | Channel2 word (4 bytes) count - 1 to be transfered |
 | 0x440ff028 |  RW  | Channel2 internal src or dst word offset depending on the control value |
-| 0x440ff02c |  -W  | Unknown / config / offset  ? |
+| 0x440ff02c |  RW  | Constant fill value / config / offset  ? |
 | 0x440ff030 |  RW  | Channel3 src or dst word offset / addr ? |
 | 0x440ff034 |  RW  | Channel3 word (4 bytes) count - 1 to be transfered |
 | 0x440ff038 |  RW  | Channel3 internal src or dst word offset depending on the control value |
 | 0x440ff03c |  --  | Unknown |
 | 0x440ff040 |  -W  | Unknown |
+
+#### 0x440ff004 register flags
+bit[4]  - necessary while using primary dmac wait functions
+
+#### Control register flags
+bit[0]  -
+bit[1]  -
+bit[2]  -
+bit[3]  -
+bit[4]  -
+bit[5]  -
+bit[6]  -
+bit[7]  -
+bit[8]  -
+bit[9]  -
 
 ### 0x04100000-0x04200000: VLD Unit (Variable Length Decoder)
 Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media Engine side). Hardware entropy decoder for video compression, decodes variable-length bitstreams into signed 32-bit DCT coefficients. Uses configurable code length lookup tables indexed by DCT levels to extract 1-32 bit codes from the bitstream.
@@ -81,7 +95,7 @@ Activated by setting bit 6 (DMA B bus) of hardware register `0xBC100050` (Media 
 | 0x4410003c |  RW  | Transfer mode ? |
 
 #### Config register flags
-bit[1]  - Start decode  
+bit[0]  - Start decode  
 bit[6]  - Process DCT level ?  
 bit[7]  - ?  
 bit[8]  - ?  
@@ -93,6 +107,12 @@ Examples:
 0b00000010000000000000001011000001  // 0x020002C1  
 0b00000000000000010000010111000001  // 0x000105C1  
 0b00000000000000010000011011000001  // 0x000106C1  
+
+### 0x040F8000: VME Reconfigurable DataPath
+
+It is now confirmed that it can handle at least 8 sources and 4 destinations across 24-bit buffers, with possible routing to other inputs (likely audio FIFO outputs). Activated with DMA A bit. The 4 main hardware config registers are PE operation descriptors.
+
+Please see [Cracking The Unknown Project](https://github.com/mcidclan/psp-media-engine-cracking-the-unknown) for more information on the VME DSP
 
 ## Components
 
@@ -112,20 +132,25 @@ DMACplus provides bidirectional DMA transfers between Media Engine and Main CPU,
     - Pattern continues across the image width
 
 ### VME (Virtual Mobile Engine / DSP)
-I noticed that the activation of the Me bus clock (bit 0 of the HW register `0xBC100050`) appears to be related to the VME (on Me side). By disabling it, it seems to shut down the VME and/or disable the local eDRAM.
 
-The VME is involved at different moments during system execution. By default, the Media Engine's core initializes it with certain parameters that cause the VME to autonomously apply background processes in the local eDRAM during homebrew usage. By observing the eDRAM, we can see a slow but progressive evolution of its content at certain memory ranges.
+Please see [Cracking The Unknown Project](https://github.com/mcidclan/psp-media-engine-cracking-the-unknown)
 
-To avoid this situation, you can configure the VME Hardware Registers like so:
+### The 0xBCC00000 Registers
+I noticed that the activation of the ME bus clock (bit 0 of the HW register `0xBC100050`) appears to be related to hardware that is able to process over the local eDRAM and main VRAM. By applying a specific configuration, it seems to disable it or the local eDRAM.
+
+This hardware seems to be involved at different moments during system execution. By default, the Media Engine's core initializes it with certain parameters that cause this component to autonomously apply background processes in the local eDRAM during homebrew usage. By observing the eDRAM, we can see a slow but progressive evolution of its content at certain memory ranges.
+
+To avoid this situation, you can configure its hardware registers like so:
 ```c
 hw(0xBCC00000) = -1;
 hw(0xBCC00030) = 1;
 hw(0xBCC00040) = 1;
 ```
+This will prevent it from processing over the eDRAM, which also appears to improve the performance of code running on the Media Engine. If you do not use the eDRAM, just clear bit 0 of the bus clock register.
 
-This will prevent the VME from processing over the eDram, which also appears to improve performance of our code running on Media Engine. If you do not use the eDRAM, just set the first bit (bit 0) of the bus register to 0.
+While the first hardware register appears to be a configuration register, the others seem to be related to frequencies, but this needs more investigation to clarify their exact meaning.
 
-While the first VME Hardware Register seems to be a configuration register, the others, somehow, appear to be related to its frequencies. But this needs more investigation to clarify the exact meaning of those registers.
+These hardware registers are probably related to the VME itself or the H.264 decoder, which would be more coherent since changing these configurations does not affect VME DSP processes.
 
 ## Utils
 
@@ -186,24 +211,20 @@ The goal is to share findings and references that might be useful to others inte
 - **Just a tiny lib**  
   [https://github.com/mcidclan/me-tiny-lib](https://github.com/mcidclan/me-tiny-lib)  
 
-
 ## Disclaimer
 This information and related code are provided as-is without warranty. Users assume full responsibility for any implementation or consequences. Use at your own discretion and risk
+
+## Related work
+
+[PSP Media Engine Safe Task](https://github.com/mcidclan/psp-media-engine-safe-task)  
+[PSP Media Engine Custom Core](https://github.com/mcidclan/psp-media-engine-custom-core)  
+[PSP Media Engine Cracking The Unknown](https://github.com/mcidclan/psp-media-engine-cracking-the-unknown)  
 
 ## Thanks
 
 Thanks to:
-- crazyc
-- hlide  
-- CelestBlue
-- artart78
-- zecoxao
-- davee
-- xerpi
-- John (Hedge)
-- Kotcrab
+- crazyc, hlide, CelestBlue, artart78, zecoxao, davee, xerpi, John (Hedge), Kotcrab
 - All contributors to the PSP Hardware Register's page
 - Anyone else who contributed through documentation or reverse engineering
-
 
 *m-c/d*
