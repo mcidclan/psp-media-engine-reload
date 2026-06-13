@@ -36,6 +36,8 @@ Handles data transfers between ping-pong buffers and main memory from Media Engi
 
 #### Hardware registers
 
+*Note: the following channel/address generator descriptions may be incomplete or inaccurate, as their behavior depends on the current control value. Please refer to the "psp-media-engine-cracking-the-unknown" and/or "the-psp-virtual-mobile-engine" projects for more up-to-date information.*
+
 | Address    |  R/W | Description |
 |------------|------|-------------|
 | 0x440ff000 |  RW  | Status |
