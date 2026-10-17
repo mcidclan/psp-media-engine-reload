@@ -1,5 +1,7 @@
 # Media Engine Reload: What's New from 2025
 
+> **Important Note:** The information in this repository may differ from the latest findings. Please also refer to the [`psp-media-engine-custom-core`](https://github.com/mcidclan/psp-media-engine-custom-core) and [`psp-media-engine-cracking-the-unknown`](https://github.com/mcidclan/psp-media-engine-cracking-the-unknown) projects for additional information.
+
 ## Code Execution Setup
 
 Code execution on the Media Engine can be achieved through the reset vector in kernel mode or using one of the new methods available in the `me-safe-task` library project. This requires kernel-level privileges through one of the following approaches:
